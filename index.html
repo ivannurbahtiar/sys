@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kelompok 2 — Dockerfile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0e14;
+    --bg2: #12161f;
+    --bg3: #1a1f2e;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --text: #e8edf5;
+    --muted: #7a8499;
+    --border: rgba(255,255,255,0.07);
+    --card: #141926;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* NAVBAR */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(11,14,20,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2.5rem;
+    height: 64px;
+  }
+  .nav-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+  }
+  .nav-logo span { color: var(--muted); }
+  .nav-links { display: flex; gap: 0.25rem; }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 0.88rem;
+    font-weight: 500;
+    padding: 0.45rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+    letter-spacing: 0.01em;
+  }
+  .nav-links a:hover, .nav-links a.active {
+    color: var(--text);
+    background: rgba(255,255,255,0.06);
+  }
+  .nav-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    background: var(--accent2);
+    color: #fff;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+  }
+
+  /* SECTIONS */
+  section { display: none; padding: 80px 0 60px; min-height: 100vh; }
+  section.active { display: block; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+  /* ── HOME ── */
+  .home-hero {
+    padding: 5rem 0 3rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+  .hero-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+  }
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.4rem, 4vw, 3.4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+  }
+  .hero-title em { color: var(--accent); font-style: normal; }
+  .hero-desc { color: var(--muted); font-size: 1rem; line-height: 1.75; max-width: 460px; }
+
+  .timeline { position: relative; padding-left: 2rem; margin-top: 2.5rem; }
+  .timeline::before {
+    content: '';
+    position: absolute; left: 0; top: 8px; bottom: 8px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent2), transparent);
+  }
+  .tl-item { position: relative; margin-bottom: 2.5rem; }
+  .tl-item::before {
+    content: '';
+    position: absolute; left: -2.45rem; top: 6px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 0 3px rgba(0,229,255,0.2);
+  }
+  .tl-year {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.3rem;
+  }
+  .tl-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+  }
+  .tl-text { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+
+  .hero-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .code-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.9;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    overflow: hidden;
+  }
+  .code-block::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .code-top {
+    display: flex; gap: 6px; align-items: center;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+  .code-file { font-size: 0.7rem; color: var(--muted); margin-left: auto; }
+  .kw { color: #ff79c6; }
+  .str { color: #f1fa8c; }
+  .cmd { color: var(--accent); }
+  .cmt { color: #6272a4; }
+  .val { color: var(--accent3); }
+
+  /* ── ABOUT ── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    margin-top: 3rem;
+    align-items: start;
+  }
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+  }
+  .section-title span { color: var(--accent); }
+  .about-desc { color: var(--muted); line-height: 1.8; font-size: 0.95rem; margin-bottom: 1.2rem; }
+  .about-visual {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .about-visual::after {
+    content: '';
+    position: absolute; bottom: -40px; right: -40px;
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    background: rgba(124,58,237,0.12);
+  }
+  .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem; }
+  .feat-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem;
+  }
+  .feat-icon { font-size: 1.4rem; margin-bottom: 0.6rem; }
+  .feat-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; margin-bottom: 0.3rem; }
+  .feat-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+  .info-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+  .info-table tr { border-bottom: 1px solid var(--border); }
+  .info-table tr:last-child { border-bottom: none; }
+  .info-table td { padding: 0.75rem 0; font-size: 0.88rem; }
+  .info-table td:first-child { color: var(--muted); width: 45%; font-family: 'Space Mono', monospace; font-size: 0.75rem; }
+  .info-table td:last-child { color: var(--text); font-weight: 500; }
+
+  /* ── SKILLS ── */
+  .skills-intro { max-width: 600px; margin-bottom: 3rem; }
+  .members-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+  .member-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.75rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .member-card:hover {
+    border-color: rgba(0,229,255,0.3);
+    transform: translateY(-3px);
+  }
+  .member-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .member-card:hover::before { opacity: 1; }
+  .mc-1::before { background: linear-gradient(90deg, #00e5ff, #7c3aed); }
+  .mc-2::before { background: linear-gradient(90deg, #10b981, #00e5ff); }
+  .mc-3::before { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+  .mc-4::before { background: linear-gradient(90deg, #ec4899, #7c3aed); }
+  .mc-5::before { background: linear-gradient(90deg, #3b82f6, #10b981); }
+  .member-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.6rem;
+  }
+  .member-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 1.2rem;
+  }
+  .skill-list { display: flex; flex-direction: column; gap: 0.7rem; }
+  .skill-item { }
+  .skill-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; }
+  .skill-name { font-size: 0.8rem; color: var(--muted); }
+  .skill-pct { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--accent); }
+  .skill-bar { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+  .skill-fill { height: 100%; border-radius: 2px; transition: width 1s ease; }
+  .fill-cyan { background: var(--accent); }
+  .fill-green { background: var(--accent3); }
+  .fill-purple { background: var(--accent2); }
+  .fill-amber { background: #f59e0b; }
+  .fill-blue { background: #3b82f6; }
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+  .tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    letter-spacing: 0.03em;
+  }
+
+  /* ── CONTACT ── */
+  .contact-intro { max-width: 550px; margin-bottom: 3rem; }
+  .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+  .contact-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .contact-card:hover { border-color: rgba(37,211,102,0.4); transform: translateY(-3px); }
+  .avatar-wrap {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    background: var(--bg3);
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: var(--accent);
+    position: relative;
+    overflow: hidden;
+  }
+  .contact-name { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.3rem; line-height: 1.3; }
+  .contact-role { font-size: 0.72rem; color: var(--muted); margin-bottom: 1rem; font-family: 'Space Mono', monospace; }
+  .wa-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: #25D366;
+    color: #fff;
+    text-decoration: none;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .wa-btn:hover { background: #1da851; transform: scale(1.04); }
+  .wa-icon { width: 16px; height: 16px; fill: #fff; flex-shrink: 0; }
+
+  /* SHARED PAGE HEADER */
+  .page-header { padding-top: 3.5rem; margin-bottom: 0; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+  footer span { color: var(--accent); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+
+  @media (max-width: 768px) {
+    nav { padding: 0 1.2rem; }
+    .nav-links a { padding: 0.4rem 0.6rem; font-size: 0.8rem; }
+    .home-hero { grid-template-columns: 1fr; gap: 2rem; }
+    .hero-visual { display: none; }
+    .about-grid { grid-template-columns: 1fr; }
+    .nav-badge { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">kelompok<span>/</span>2 <span>•</span> dockerfile</div>
+  <div class="nav-links">
+    <a href="#" onclick="showPage('home')" class="active" id="nav-home">Home</a>
+    <a href="#" onclick="showPage('about')" id="nav-about">About</a>
+    <a href="#" onclick="showPage('skills')" id="nav-skills">Skills</a>
+    <a href="#" onclick="showPage('contact')" id="nav-contact">Contact</a>
+  </div>
+  <div class="nav-badge">SYS · 2025</div>
+</nav>
+
+<!-- ═══════════════ HOME ═══════════════ -->
+<section id="page-home" class="active">
+<div class="container">
+  <div class="home-hero">
+    <div>
+      <p class="hero-eyebrow">// Sistem Informasi · Kelompok 2</p>
+      <h1 class="hero-title">Sejarah<br><em>Dockerfile</em></h1>
+      <p class="hero-desc">Perjalanan dari kontainer fisik ke revolusi cloud — bagaimana Docker mengubah cara dunia membangun dan menjalankan perangkat lunak.</p>
+
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-year">// 2010</div>
+          <div class="tl-title">Kelahiran dotCloud</div>
+          <div class="tl-text">Solomon Hykes mendirikan dotCloud, sebuah platform-as-a-service (PaaS) yang menjadi cikal bakal teknologi Docker. Tim kecil mulai bereksperimen dengan kontainerisasi Linux.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-year">// Maret 2013</div>
+          <div class="tl-title">Docker Diluncurkan ke Publik</div>
+          <div class="tl-text">Docker diperkenalkan kepada dunia di PyCon 2013 oleh Solomon Hykes. Proyek open-source ini langsung mendapat perhatian besar dari komunitas developer global.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-year">// 2013</div>
+          <div class="tl-title">Dockerfile Hadir</div>
+          <div class="tl-text">Dockerfile diperkenalkan sebagai cara deklaratif untuk mendefinisikan image Docker. Format teks sederhana ini memungkinkan developer mengotomatisasi proses pembuatan image secara konsisten dan reproducible.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-year">// 2014</div>
+          <div class="tl-title">Docker Hub & Ekosistem</div>
+          <div class="tl-text">Docker Hub diluncurkan sebagai registry publik untuk berbagi image. Docker Compose memudahkan orkestrasi multi-kontainer menggunakan Dockerfile. Adopsi enterprise mulai melonjak drastis.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-year">// 2015–2017</div>
+          <div class="tl-title">Standarisasi OCI</div>
+          <div class="tl-text">Open Container Initiative (OCI) dibentuk untuk membakukan format kontainer. Docker menyumbangkan spesifikasinya, menjadikan Dockerfile dan format image Docker sebagai standar industri yang diakui secara global.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-year">// 2017–Kini</div>
+          <div class="tl-title">Era Kubernetes & Cloud Native</div>
+          <div class="tl-text">Dockerfile menjadi fondasi ekosistem cloud-native. Kubernetes, Google Cloud, AWS, dan Azure semuanya mendukung format ini. Multi-stage build diperkenalkan untuk optimasi ukuran image produksi.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="code-block">
+        <div class="code-top">
+          <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+          <span class="code-file">Dockerfile</span>
+        </div>
+        <div><span class="cmt"># Base image</span></div>
+        <div><span class="kw">FROM</span> <span class="val">ubuntu:22.04</span></div>
+        <div>&nbsp;</div>
+        <div><span class="cmt"># Metadata</span></div>
+        <div><span class="kw">LABEL</span> maintainer=<span class="str">"kelompok2"</span></div>
+        <div>&nbsp;</div>
+        <div><span class="cmt"># Set workdir</span></div>
+        <div><span class="kw">WORKDIR</span> <span class="val">/app</span></div>
+        <div>&nbsp;</div>
+        <div><span class="cmt"># Install dependencies</span></div>
+        <div><span class="kw">RUN</span> <span class="cmd">apt-get update</span> <span class="val">\</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&amp;&amp; <span class="cmd">apt-get install -y</span> <span class="str">python3</span></div>
+        <div>&nbsp;</div>
+        <div><span class="cmt"># Copy source code</span></div>
+        <div><span class="kw">COPY</span> . <span class="val">.</span></div>
+        <div>&nbsp;</div>
+        <div><span class="cmt"># Expose port</span></div>
+        <div><span class="kw">EXPOSE</span> <span class="str">8080</span></div>
+        <div>&nbsp;</div>
+        <div><span class="cmt"># Run app</span></div>
+        <div><span class="kw">CMD</span> [<span class="str">"python3"</span>, <span class="str">"app.py"</span>]</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════ ABOUT ═══════════════ -->
+<section id="page-about">
+<div class="container">
+  <div class="page-header">
+    <p class="section-label">// Tentang Teknologi</p>
+    <h2 class="section-title">Apa itu<br><span>Dockerfile?</span></h2>
+  </div>
+
+  <div class="about-grid">
+    <div>
+      <p class="about-desc">
+        <strong>Dockerfile</strong> adalah file teks berisi serangkaian instruksi yang digunakan Docker untuk membangun sebuah <em>image</em> secara otomatis. File ini mendefinisikan lingkungan eksekusi aplikasi secara lengkap — mulai dari base OS, dependensi, konfigurasi, hingga perintah yang dijalankan saat kontainer aktif.
+      </p>
+      <p class="about-desc">
+        Dengan Dockerfile, prinsip <em>"build once, run anywhere"</em> menjadi kenyataan. Setiap developer di tim dapat membangun lingkungan yang identik, menghilangkan masalah klasik "works on my machine".
+      </p>
+      <p class="about-desc">
+        Dockerfile menggunakan sintaks sederhana berbasis instruksi seperti <code style="background:var(--bg3);padding:1px 6px;border-radius:4px;font-family:'Space Mono',monospace;font-size:0.82em;color:var(--accent)">FROM</code>, <code style="background:var(--bg3);padding:1px 6px;border-radius:4px;font-family:'Space Mono',monospace;font-size:0.82em;color:var(--accent)">RUN</code>, <code style="background:var(--bg3);padding:1px 6px;border-radius:4px;font-family:'Space Mono',monospace;font-size:0.82em;color:var(--accent)">COPY</code>, <code style="background:var(--bg3);padding:1px 6px;border-radius:4px;font-family:'Space Mono',monospace;font-size:0.82em;color:var(--accent)">EXPOSE</code>, dan <code style="background:var(--bg3);padding:1px 6px;border-radius:4px;font-family:'Space Mono',monospace;font-size:0.82em;color:var(--accent)">CMD</code> yang masing-masing memiliki fungsi spesifik dalam membangun layer image.
+      </p>
+
+      <table class="info-table">
+        <tr><td>Dibuat oleh</td><td>Docker, Inc. (Solomon Hykes)</td></tr>
+        <tr><td>Tahun rilis</td><td>2013</td></tr>
+        <tr><td>Ekstensi file</td><td>Dockerfile (tanpa ekstensi)</td></tr>
+        <tr><td>Format</td><td>Plain text, instruksi berbasis baris</td></tr>
+        <tr><td>Lisensi</td><td>Apache License 2.0</td></tr>
+        <tr><td>Ekosistem</td><td>Docker, Kubernetes, OCI</td></tr>
+      </table>
+    </div>
+
+    <div>
+      <div class="about-visual">
+        <p class="section-label" style="margin-bottom:1rem;">// Instruksi Utama Dockerfile</p>
+        <table class="info-table">
+          <tr><td>FROM</td><td>Mendefinisikan base image</td></tr>
+          <tr><td>RUN</td><td>Menjalankan perintah shell saat build</td></tr>
+          <tr><td>COPY / ADD</td><td>Menyalin file ke dalam image</td></tr>
+          <tr><td>WORKDIR</td><td>Mengatur direktori kerja</td></tr>
+          <tr><td>ENV</td><td>Menetapkan environment variable</td></tr>
+          <tr><td>EXPOSE</td><td>Mendokumentasikan port yang digunakan</td></tr>
+          <tr><td>VOLUME</td><td>Membuat mount point untuk data</td></tr>
+          <tr><td>ARG</td><td>Variabel build-time</td></tr>
+          <tr><td>ENTRYPOINT</td><td>Perintah default saat kontainer start</td></tr>
+          <tr><td>CMD</td><td>Argumen default untuk ENTRYPOINT</td></tr>
+        </table>
+      </div>
+
+      <div class="feat-grid">
+        <div class="feat-card">
+          <div class="feat-icon">📦</div>
+          <div class="feat-title">Reproducible</div>
+          <div class="feat-desc">Build yang sama menghasilkan image identik setiap saat.</div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">⚡</div>
+          <div class="feat-title">Layer Cache</div>
+          <div class="feat-desc">Setiap instruksi membentuk layer yang bisa di-cache untuk build lebih cepat.</div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">🔒</div>
+          <div class="feat-title">Isolasi</div>
+          <div class="feat-desc">Aplikasi berjalan terisolasi dari sistem host dan kontainer lain.</div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">🚀</div>
+          <div class="feat-title">Portabel</div>
+          <div class="feat-desc">Jalankan image yang sama di dev, staging, maupun production.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════ SKILLS ═══════════════ -->
+<section id="page-skills">
+<div class="container">
+  <div class="page-header">
+    <p class="section-label">// Anggota Tim</p>
+    <h2 class="section-title">Skills <span>Kelompok 2</span></h2>
+  </div>
+  <div class="skills-intro">
+    <p style="color:var(--muted);font-size:0.95rem;line-height:1.75;">Berikut adalah profil keahlian dari masing-masing anggota kelompok 2 dalam bidang teknologi informasi dan pengembangan sistem.</p>
+  </div>
+
+  <div class="members-grid">
+
+    <!-- Ahmad Luthfan -->
+    <div class="member-card mc-1">
+      <div class="member-num">// 01</div>
+      <div class="member-name">Ahmad Luthfan Wijayana</div>
+      <div class="skill-list">
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Docker & Containerization</span><span class="skill-pct">90%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-cyan" style="width:90%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Linux Administration</span><span class="skill-pct">85%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-cyan" style="width:85%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Shell Scripting</span><span class="skill-pct">80%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-cyan" style="width:80%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">CI/CD Pipeline</span><span class="skill-pct">75%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-cyan" style="width:75%"></div></div>
+        </div>
+      </div>
+      <div class="skill-tags">
+        <span class="tag">Docker</span><span class="tag">Linux</span><span class="tag">Bash</span><span class="tag">Git</span>
+      </div>
+    </div>
+
+    <!-- Ivan -->
+    <div class="member-card mc-2">
+      <div class="member-num">// 02</div>
+      <div class="member-name">Ivan Nurbahtiar</div>
+      <div class="skill-list">
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">SYSAdmin</span><span class="skill-pct">95%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-green" style="width:95%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Networking & TCP/IP</span><span class="skill-pct">95%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-green" style="width:95%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Python Programming</span><span class="skill-pct">70%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-green" style="width:70%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Cloud Infrastructure</span><span class="skill-pct">60%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-green" style="width:60%"></div></div>
+        </div>
+      </div>
+      <div class="skill-tags">
+        <span class="tag">SYSAdmin</span><span class="tag">Networking & TCP/IP</span><span class="tag">Python Programming</span><span class="tag">Cloud Infrastructure</span>
+      </div>
+    </div>
+
+    <!-- Afifatul -->
+    <div class="member-card mc-3">
+      <div class="member-num">// 03</div>
+      <div class="member-name">Afifatul Rohmah</div>
+      <div class="skill-list">
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Database Management</span><span class="skill-pct">87%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-amber" style="width:87%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Docker Compose</span><span class="skill-pct">83%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-amber" style="width:83%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Web Development</span><span class="skill-pct">80%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-amber" style="width:80%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">SQL & NoSQL</span><span class="skill-pct">85%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-amber" style="width:85%"></div></div>
+        </div>
+      </div>
+      <div class="skill-tags">
+        <span class="tag">MySQL</span><span class="tag">MongoDB</span><span class="tag">HTML/CSS</span><span class="tag">Compose</span>
+      </div>
+    </div>
+
+    <!-- Habiba -->
+    <div class="member-card mc-4">
+      <div class="member-num">// 04</div>
+      <div class="member-name">Habiba Ratna Safitri</div>
+      <div class="skill-list">
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">UI/UX Design</span><span class="skill-pct">90%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-purple" style="width:90%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Frontend Development</span><span class="skill-pct">82%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-purple" style="width:82%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">DevOps Documentation</span><span class="skill-pct">78%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-purple" style="width:78%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Figma & Prototyping</span><span class="skill-pct">88%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-purple" style="width:88%"></div></div>
+        </div>
+      </div>
+      <div class="skill-tags">
+        <span class="tag">Figma</span><span class="tag">React</span><span class="tag">CSS</span><span class="tag">Docs</span>
+      </div>
+    </div>
+
+    <!-- Keyna -->
+    <div class="member-card mc-5">
+      <div class="member-num">// 05</div>
+      <div class="member-name">Keyna Sofie Ariani</div>
+      <div class="skill-list">
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">System Analysis</span><span class="skill-pct">86%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-blue" style="width:86%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Security & Hardening</span><span class="skill-pct">80%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-blue" style="width:80%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Java / OOP</span><span class="skill-pct">84%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-blue" style="width:84%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Container Security</span><span class="skill-pct">79%</span></div>
+          <div class="skill-bar"><div class="skill-fill fill-blue" style="width:79%"></div></div>
+        </div>
+      </div>
+      <div class="skill-tags">
+        <span class="tag">Java</span><span class="tag">Security</span><span class="tag">Analysis</span><span class="tag">Docker</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════ CONTACT ═══════════════ -->
+<section id="page-contact">
+<div class="container">
+  <div class="page-header">
+    <p class="section-label">// Hubungi Kami</p>
+    <h2 class="section-title">Anggota <span>Kelompok 2</span></h2>
+  </div>
+  <div class="contact-intro">
+    <p style="color:var(--muted);font-size:0.95rem;line-height:1.75;">Kelompok 2 — Mata Kuliah Sistem Informasi. Hubungi kami melalui WhatsApp untuk pertanyaan seputar materi Dockerfile.</p>
+  </div>
+
+  <div class="contact-grid">
+
+    <div class="contact-card">
+      <div class="avatar-wrap">
+        <img src="luthfan.jpeg" alt="Ahmad Luthfan Wijayana" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+      </div>
+      <div class="contact-name">Ahmad Luthfan Wijayana</div>
+      <div class="contact-role">// Anggota 01</div>
+      <a class="wa-btn" href="https://wa.me/6281234567890" target="_blank">
+        <svg class="wa-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp
+      </a>
+    </div>
+
+    <div class="contact-card">
+      <div class="avatar-wrap">
+        <img src="ivan.png" alt="Ivan Nurbahtiar" style="width:100%;height:100%;object-fit:cover;border-radius:0%;">
+      </div>
+      <div class="contact-name">Ivan Nurbahtiar</div>
+      <div class="contact-role">// Anggota 02</div>
+      <a class="wa-btn" href="https://wa.me/6281234567891" target="_blank">
+        <svg class="wa-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp
+      </a>
+    </div>
+
+    <div class="contact-card">
+      <div class="avatar-wrap">
+        <img src="foto_luthfan.jpg" alt="Afifatul Rohmah" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+      </div>
+      <div class="contact-name">Afifatul Rohmah</div>
+      <div class="contact-role">// Anggota 03</div>
+      <a class="wa-btn" href="https://wa.me/6281234567892" target="_blank">
+        <svg class="wa-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp
+      </a>
+    </div>
+
+    <div class="contact-card">
+      <div class="avatar-wrap">
+        <img src="ratna.png" alt="Habiba Ratna Safitri" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+      </div>
+      <div class="contact-name">Habiba Ratna Safitri</div>
+      <div class="contact-role">// Anggota 04</div>
+      <a class="wa-btn" href="https://wa.me/6281234567893" target="_blank">
+        <svg class="wa-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp
+      </a>
+    </div>
+
+    <div class="contact-card">
+      <div class="avatar-wrap">
+        <img src="foto_luthfan.jpg" alt="Keyna Sofie Ariani" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+      </div>
+      <div class="contact-name">Keyna Sofie Ariani</div>
+      <div class="contact-role">// Anggota 05</div>
+      <a class="wa-btn" href="https://wa.me/6281234567894" target="_blank">
+        <svg class="wa-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp
+      </a>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<footer>
+  <span>Kelompok 2</span> · Dockerfile · Sistem Informasi · 2025 · All rights reserved
+</footer>
+
+<script>
+function showPage(name) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
